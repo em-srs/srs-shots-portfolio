@@ -445,9 +445,6 @@ footer{margin-top:120px;border-top:1px solid var(--line);padding:34px 6vw;displa
 <script>
 // nav bg on scroll
 const nav = document.getElementById('nav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 40);
-});
 
 // custom cursor
 const cursor = document.getElementById('cursor');
@@ -469,17 +466,6 @@ shutterBtn.addEventListener('click', () => {
   document.getElementById('work').scrollIntoView({ behavior: 'smooth' });
 });
 
-// hero image parallax on scroll (subtle zoom-drift as you leave the hero)
-const heroSection = document.getElementById('heroSection');
-const heroImg = document.getElementById('heroImg');
-function updateHeroParallax() {
-  const rect = heroSection.getBoundingClientRect();
-  const progress = Math.min(1, Math.max(0, -rect.top / rect.height));
-  heroImg.style.transform = `scale(${1.06 + progress * 0.08}) translateY(${progress * 30}px)`;
-}
-window.addEventListener('scroll', updateHeroParallax, { passive: true });
-updateHeroParallax();
-
 // scroll reveal
 const revealEls = document.querySelectorAll('.reveal');
 const io = new IntersectionObserver((entries) => {
@@ -489,23 +475,78 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 revealEls.forEach(el => io.observe(el));
 
-// horizontal scroll-jacked gallery
-const outer = document.querySelector('.horizontal-outer');
-const track = document.getElementById('track');
-const progressFill = document.getElementById('progressFill');
+// --- SINGLE rAF-BATCHED SCROLL LOOP ---
+// Replaces the two separate unthrottled scroll listeners (hero parallax +
+// horizontal gallery), which were each forcing a synchronous layout read
+// (getBoundingClientRect) followed by a style write, back-to-back, on every
+// native scroll event. That read/write/read/write interleaving across two
+// handlers is what caused the stutter. This version reads layout values
+// once per animation frame and writes once per frame, regardless of how
+// many raw scroll events fire in between.
 
-function updateHorizontal() {
-  const rect = outer.getBoundingClientRect();
-  const total = rect.height - window.innerHeight;
-  let progress = -rect.top / total;
-  progress = Math.max(0, Math.min(1, progress));
-  const maxTranslate = track.scrollWidth - (window.innerWidth - (window.innerWidth * 0.06 * 2)) + (window.innerWidth * 0.06);
-  track.style.transform = `translateX(-${progress * maxTranslate}px)`;
-  progressFill.style.width = (progress * 100) + '%';
+const heroSection   = document.getElementById('heroSection');
+const heroImg       = document.getElementById('heroImg');
+const outer         = document.querySelector('.horizontal-outer');
+const track         = document.getElementById('track');
+const progressFill  = document.getElementById('progressFill');
+
+let ticking = false;
+let cachedMaxTranslate = null;
+
+function recalcMaxTranslate() {
+  // scrollWidth/innerWidth only need recomputing on resize or after images load,
+  // not on every scroll frame
+  cachedMaxTranslate = track.scrollWidth
+    - (window.innerWidth - (window.innerWidth * 0.06 * 2))
+    + (window.innerWidth * 0.06);
 }
-window.addEventListener('scroll', updateHorizontal, { passive: true });
-window.addEventListener('resize', updateHorizontal);
-updateHorizontal();
+
+function renderFrame() {
+  // --- READ PHASE (once) ---
+  const heroRect  = heroSection.getBoundingClientRect();
+  const outerRect = outer.getBoundingClientRect();
+
+  // --- COMPUTE PHASE ---
+  const heroProgress = Math.min(1, Math.max(0, -heroRect.top / heroRect.height));
+
+  const total = outerRect.height - window.innerHeight;
+  let horizProgress = -outerRect.top / total;
+  horizProgress = Math.max(0, Math.min(1, horizProgress));
+
+  // --- WRITE PHASE (once) ---
+  heroImg.style.transform = `scale(${1.06 + heroProgress * 0.08}) translateY(${heroProgress * 30}px)`;
+  track.style.transform = `translateX(-${horizProgress * cachedMaxTranslate}px)`;
+  progressFill.style.width = (horizProgress * 100) + '%';
+
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+
+  ticking = false;
+}
+
+function onScroll() {
+  if (!ticking) {
+    requestAnimationFrame(renderFrame);
+    ticking = true;
+  }
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('resize', () => {
+  recalcMaxTranslate();
+  requestAnimationFrame(renderFrame);
+});
+
+// Make sure gallery image dimensions are known before first calculation —
+// otherwise scrollWidth can be measured before images finish loading,
+// causing the horizontal distance to be wrong/jumpy on first scroll.
+window.addEventListener('load', () => {
+  recalcMaxTranslate();
+  renderFrame();
+});
+
+// initial call in case load already fired
+recalcMaxTranslate();
+renderFrame();
 </script>
 
 </body>
