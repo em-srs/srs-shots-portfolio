@@ -30,10 +30,80 @@ body{
   font-weight:300;
   overflow-x:hidden;
   cursor:default;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
 }
 ::selection{background:var(--accent);color:#0b0b0c;}
 a{color:inherit;text-decoration:none;}
-img{display:block;max-width:100%;}
+img{
+  display:block;
+  max-width:100%;
+  pointer-events:none;
+  -webkit-user-drag:none;
+  -khtml-user-drag:none;
+  -moz-user-drag:none;
+  -o-user-drag:none;
+  user-drag:none;
+}
+
+.img-protection-overlay{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  background:transparent;
+}
+.watermark-stamp{
+  position:absolute;
+  top:16px;
+  right:16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:rgba(239,237,230,.38);
+  background:rgba(11,11,12,.4);
+  backdrop-filter:blur(4px);
+  padding:4px 8px;
+  border-radius:2px;
+  border:1px solid rgba(239,237,230,.08);
+  pointer-events:none;
+  z-index:3;
+  user-select:none;
+}
+.security-toast{
+  position:fixed;
+  bottom:28px;
+  left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:rgba(17,17,20,.94);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--accent-soft);
+  color:var(--text);
+  padding:12px 22px;
+  border-radius:100px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:.06em;
+  box-shadow:0 16px 36px rgba(0,0,0,.6);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  z-index:10000;
+  opacity:0;
+  transition:transform .35s cubic-bezier(.175,.885,.32,1.275), opacity .3s ease;
+  pointer-events:none;
+}
+.security-toast.show{
+  transform:translateX(-50%) translateY(0);
+  opacity:1;
+}
+.security-toast-icon{
+  color:var(--accent);
+  font-size:13px;
+}
 
 .grain{
   position:fixed;inset:0;pointer-events:none;z-index:999;
@@ -199,13 +269,13 @@ section{position:relative;padding:130px 0;}
 .frame img{width:100%;height:100%;object-fit:cover;filter:grayscale(.1) contrast(1.03);transition:transform .7s ease;}
 .frame:hover img{transform:scale(1.05);}
 .frame-tag{
-  position:absolute;top:16px;left:16px;
+  position:absolute;top:16px;left:16px;z-index:4;
   font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--text);background:rgba(11,11,12,.55);backdrop-filter:blur(6px);
   padding:6px 10px;border:1px solid var(--line-strong);border-radius:2px;
 }
 .frame-caption{
-  position:absolute;bottom:0;left:0;right:0;padding:18px;
+  position:absolute;bottom:0;left:0;right:0;padding:18px;z-index:4;
   background:linear-gradient(to top, rgba(11,11,12,.85), transparent);
   display:flex;justify-content:space-between;align-items:flex-end;
   font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);letter-spacing:.05em;
@@ -226,7 +296,7 @@ section{position:relative;padding:130px 0;}
 .select-item.d{grid-column:span 3;aspect-ratio:5/4;}
 .select-item.e{grid-column:span 3;aspect-ratio:5/4;}
 .select-caption{
-  position:absolute;left:16px;bottom:14px;font-family:'JetBrains Mono',monospace;
+  position:absolute;left:16px;bottom:14px;z-index:4;font-family:'JetBrains Mono',monospace;
   font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text);
   text-shadow:0 2px 12px rgba(0,0,0,.7);
 }
@@ -293,7 +363,8 @@ footer{margin-top:120px;border-top:1px solid var(--line);padding:34px 6vw;displa
 <!-- HERO -->
 <section class="hero" id="heroSection">
   <div class="hero-bg">
-    <img id="heroImg" src="assets/hero/hero.webp" alt="Sunny Kumar, portrait">
+    <img id="heroImg" src="assets/hero/hero.webp" alt="Sunny Kumar, portrait" draggable="false" oncontextmenu="return false;" ondragstart="return false;">
+    <div class="img-protection-overlay"></div>
   </div>
   <div class="hero-scrim-top"></div>
   <div class="hero-scrim-bottom"></div>
@@ -363,18 +434,18 @@ footer{margin-top:120px;border-top:1px solid var(--line);padding:34px 6vw;displa
       <p>Twelve frames, shot on location — from misty ridgelines in Shimla to concert lights in Landran. Scroll to develop.</p>
     </div>
     <div class="track" id="track">
-      <div class="frame"><span class="frame-tag">01 / 12</span><img src="assets/gallery/01-scenery-shimla.webp" alt="Scenery, Shimla"><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Shimla</b></div></div>
-      <div class="frame"><span class="frame-tag">02 / 12</span><img src="assets/gallery/02-portrait-jibhi.webp" alt="Portrait, Jibhi"><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Jibhi, HP</b></div></div>
-      <div class="frame"><span class="frame-tag">03 / 12</span><img src="assets/gallery/03-portrait-jibhi-2.webp" alt="Portrait, Jibhi"><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Jibhi, HP</b></div></div>
-      <div class="frame"><span class="frame-tag">04 / 12</span><img src="assets/gallery/04-scenery-shojha.webp" alt="Scenery, Shojha"><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Shojha, HP</b></div></div>
-      <div class="frame"><span class="frame-tag">05 / 12</span><img src="assets/gallery/05-portrait-shojha.webp" alt="Portrait, Shojha"><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Shojha, HP</b></div></div>
-      <div class="frame"><span class="frame-tag">06 / 12</span><img src="assets/gallery/06-portrait-chandigarh.webp" alt="Portrait, Chandigarh"><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Chandigarh</b></div></div>
-      <div class="frame"><span class="frame-tag">07 / 12</span><img src="assets/gallery/07-scenery-jibhi.webp" alt="Scenery, Jibhi"><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Jibhi, HP</b></div></div>
-      <div class="frame"><span class="frame-tag">08 / 12</span><img src="assets/gallery/08-portrait-chandigarh.webp" alt="Portrait, Chandigarh"><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Chandigarh</b></div></div>
-      <div class="frame"><span class="frame-tag">09 / 12</span><img src="assets/gallery/09-scenery-mohali.webp" alt="Scenery, Mohali"><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Mohali</b></div></div>
-      <div class="frame"><span class="frame-tag">10 / 12</span><img src="assets/gallery/10-concert-cgc-landran.webp" alt="Concert, CGC Landran"><div class="frame-caption"><span class="frame-index">CONCERT</span><b>CGC Landran</b></div></div>
-      <div class="frame"><span class="frame-tag">11 / 12</span><img src="assets/gallery/11-portrait-swati-jibhi.webp" alt="Portrait, Jibhi"><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Jibhi, HP</b></div></div>
-      <div class="frame"><span class="frame-tag">12 / 12</span><img src="assets/gallery/12-scenery-jibhi.webp" alt="Scenery, Jibhi"><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Jibhi, HP</b></div></div>
+      <div class="frame"><span class="frame-tag">01 / 12</span><img src="assets/gallery/01-scenery-shimla.webp" alt="Scenery, Shimla" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Shimla</b></div></div>
+      <div class="frame"><span class="frame-tag">02 / 12</span><img src="assets/gallery/02-portrait-jibhi.webp" alt="Portrait, Jibhi" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Jibhi, HP</b></div></div>
+      <div class="frame"><span class="frame-tag">03 / 12</span><img src="assets/gallery/03-portrait-jibhi-2.webp" alt="Portrait, Jibhi" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Jibhi, HP</b></div></div>
+      <div class="frame"><span class="frame-tag">04 / 12</span><img src="assets/gallery/04-scenery-shojha.webp" alt="Scenery, Shojha" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Shojha, HP</b></div></div>
+      <div class="frame"><span class="frame-tag">05 / 12</span><img src="assets/gallery/05-portrait-shojha.webp" alt="Portrait, Shojha" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Shojha, HP</b></div></div>
+      <div class="frame"><span class="frame-tag">06 / 12</span><img src="assets/gallery/06-portrait-chandigarh.webp" alt="Portrait, Chandigarh" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Chandigarh</b></div></div>
+      <div class="frame"><span class="frame-tag">07 / 12</span><img src="assets/gallery/07-scenery-jibhi.webp" alt="Scenery, Jibhi" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Jibhi, HP</b></div></div>
+      <div class="frame"><span class="frame-tag">08 / 12</span><img src="assets/gallery/08-portrait-chandigarh.webp" alt="Portrait, Chandigarh" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Chandigarh</b></div></div>
+      <div class="frame"><span class="frame-tag">09 / 12</span><img src="assets/gallery/09-scenery-mohali.webp" alt="Scenery, Mohali" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Mohali</b></div></div>
+      <div class="frame"><span class="frame-tag">10 / 12</span><img src="assets/gallery/10-concert-cgc-landran.webp" alt="Concert, CGC Landran" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">CONCERT</span><b>CGC Landran</b></div></div>
+      <div class="frame"><span class="frame-tag">11 / 12</span><img src="assets/gallery/11-portrait-swati-jibhi.webp" alt="Portrait, Jibhi" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">PORTRAIT</span><b>Jibhi, HP</b></div></div>
+      <div class="frame"><span class="frame-tag">12 / 12</span><img src="assets/gallery/12-scenery-jibhi.webp" alt="Scenery, Jibhi" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="frame-caption"><span class="frame-index">SCENERY</span><b>Jibhi, HP</b></div></div>
     </div>
     <div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
   </div>
@@ -390,11 +461,11 @@ footer{margin-top:120px;border-top:1px solid var(--line);padding:34px 6vw;displa
     <p>A handful of frames worth printing large — the ones I keep coming back to.</p>
   </div>
   <div class="selects reveal">
-    <div class="select-item a"><img src="assets/selects/d-concert-cgc-landran.webp" alt="Concert, CGC Landran"><div class="select-caption">Concert — CGC Landran</div></div>
-    <div class="select-item b"><img src="assets/selects/b-portrait-jibhi.webp" alt="Portrait, Jibhi"><div class="select-caption">Portrait — Jibhi</div></div>
-    <div class="select-item c"><img src="assets/selects/c-scenery-shimla.webp" alt="Scenery, Shimla"><div class="select-caption">Scenery — Shimla</div></div>
-    <div class="select-item d"><img src="assets/selects/a-moonshot-chandigarh.webp" alt="Moonshot, Chandigarh"><div class="select-caption">Moonshot — Chandigarh</div></div>
-    <div class="select-item e"><img src="assets/selects/e-scenery-parasnath-jharkhand.webp" alt="Scenery, Parasnath"><div class="select-caption">Scenery — Parasnath, Jharkhand</div></div>
+    <div class="select-item a"><img src="assets/selects/d-concert-cgc-landran.webp" alt="Concert, CGC Landran" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="select-caption">Concert — CGC Landran</div></div>
+    <div class="select-item b"><img src="assets/selects/b-portrait-jibhi.webp" alt="Portrait, Jibhi" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="select-caption">Portrait — Jibhi</div></div>
+    <div class="select-item c"><img src="assets/selects/c-scenery-shimla.webp" alt="Scenery, Shimla" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="select-caption">Scenery — Shimla</div></div>
+    <div class="select-item d"><img src="assets/selects/a-moonshot-chandigarh.webp" alt="Moonshot, Chandigarh" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="select-caption">Moonshot — Chandigarh</div></div>
+    <div class="select-item e"><img src="assets/selects/e-scenery-parasnath-jharkhand.webp" alt="Scenery, Parasnath" draggable="false" oncontextmenu="return false;" ondragstart="return false;"><div class="img-protection-overlay"></div><span class="watermark-stamp">© SUNNY KUMAR</span><div class="select-caption">Scenery — Parasnath, Jharkhand</div></div>
   </div>
 </section>
 
@@ -442,7 +513,50 @@ footer{margin-top:120px;border-top:1px solid var(--line);padding:34px 6vw;displa
   <div class="footer-meta">Mohali, Punjab, India</div>
 </footer>
 
+<div class="security-toast" id="securityToast">
+  <span class="security-toast-icon">🔒</span>
+  <span>Photo downloads are disabled to protect subject privacy</span>
+</div>
+
 <script>
+// --- PHOTO DOWNLOAD PREVENTION & PRIVACY CONTROLS ---
+let toastTimeout;
+function showSecurityNotice(e) {
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
+  const toast = document.getElementById('securityToast');
+  if (toast) {
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+  return false;
+}
+
+document.addEventListener('contextmenu', e => {
+  showSecurityNotice(e);
+});
+
+document.addEventListener('dragstart', e => {
+  if (e.target.tagName === 'IMG' || (e.target.classList && e.target.classList.contains('img-protection-overlay'))) {
+    showSecurityNotice(e);
+  }
+});
+
+document.addEventListener('keydown', e => {
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+  const key = e.key ? e.key.toLowerCase() : '';
+  
+  if (
+    (cmdOrCtrl && key === 's') ||
+    (cmdOrCtrl && key === 'u') ||
+    e.key === 'F12' ||
+    (cmdOrCtrl && e.shiftKey && (key === 'i' || key === 'j' || key === 'c'))
+  ) {
+    showSecurityNotice(e);
+  }
+});
+
 // nav bg on scroll
 const nav = document.getElementById('nav');
 
@@ -476,14 +590,6 @@ const io = new IntersectionObserver((entries) => {
 revealEls.forEach(el => io.observe(el));
 
 // --- SINGLE rAF-BATCHED SCROLL LOOP ---
-// Replaces the two separate unthrottled scroll listeners (hero parallax +
-// horizontal gallery), which were each forcing a synchronous layout read
-// (getBoundingClientRect) followed by a style write, back-to-back, on every
-// native scroll event. That read/write/read/write interleaving across two
-// handlers is what caused the stutter. This version reads layout values
-// once per animation frame and writes once per frame, regardless of how
-// many raw scroll events fire in between.
-
 const heroSection   = document.getElementById('heroSection');
 const heroImg       = document.getElementById('heroImg');
 const outer         = document.querySelector('.horizontal-outer');
@@ -494,26 +600,21 @@ let ticking = false;
 let cachedMaxTranslate = null;
 
 function recalcMaxTranslate() {
-  // scrollWidth/innerWidth only need recomputing on resize or after images load,
-  // not on every scroll frame
   cachedMaxTranslate = track.scrollWidth
     - (window.innerWidth - (window.innerWidth * 0.06 * 2))
     + (window.innerWidth * 0.06);
 }
 
 function renderFrame() {
-  // --- READ PHASE (once) ---
   const heroRect  = heroSection.getBoundingClientRect();
   const outerRect = outer.getBoundingClientRect();
 
-  // --- COMPUTE PHASE ---
   const heroProgress = Math.min(1, Math.max(0, -heroRect.top / heroRect.height));
 
   const total = outerRect.height - window.innerHeight;
   let horizProgress = -outerRect.top / total;
   horizProgress = Math.max(0, Math.min(1, horizProgress));
 
-  // --- WRITE PHASE (once) ---
   heroImg.style.transform = `scale(${1.06 + heroProgress * 0.08}) translateY(${heroProgress * 30}px)`;
   track.style.transform = `translateX(-${horizProgress * cachedMaxTranslate}px)`;
   progressFill.style.width = (horizProgress * 100) + '%';
@@ -536,15 +637,11 @@ window.addEventListener('resize', () => {
   requestAnimationFrame(renderFrame);
 });
 
-// Make sure gallery image dimensions are known before first calculation —
-// otherwise scrollWidth can be measured before images finish loading,
-// causing the horizontal distance to be wrong/jumpy on first scroll.
 window.addEventListener('load', () => {
   recalcMaxTranslate();
   renderFrame();
 });
 
-// initial call in case load already fired
 recalcMaxTranslate();
 renderFrame();
 </script>

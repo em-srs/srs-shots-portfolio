@@ -1,2 +1,9 @@
-﻿node_modules
+node_modules
 .DS_Store
+
+# Protect photos of real persons from raw repository commit
+assets/**/*.jpg
+assets/**/*.jpeg
+assets/**/*.png
+assets/**/*.webp
+!assets/**/.gitkeep
